@@ -1,0 +1,21 @@
+{
+  "name": "json-size-extrapolation",
+  "version": "1.0.0",
+  "description": "Given a sample object estimate the number of those samples that will fit in an json stringified array of that object.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "json",
+    "size",
+    "estimate"
+  ],
+  "author": "Tyler Stiene <tystiene@gmail.com> (https://tylerstiene.ca)",
+  "license": "MIT",
+  "dependencies": {
+    "atob": "^2.1.2",
+    "btoa": "^1.2.1",
+    "log-update": "^2.3.0"
+  }
+}
