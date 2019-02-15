@@ -8,9 +8,7 @@ Used to understand limits around Firestore's 1 MB object limit.
 
 ## Usage
 
-Clone
-
-Edit object and size limit.
+If you clone this repo you can adjust the boject function and size limites.
 
 ``` bash
 node index.js
@@ -21,17 +19,30 @@ node index.js
 The included object is based off of a an object used to store information at [logmy.io](https://logmy.io).
 A function is used to added randomness to the array of objects to ensure reasonable accuracy once compressed.
 
-> Finidng Limit of JSON.stringify to fit in  1048576  bytes
-> JSON.stringify objects: 10504 bytes: 1048505
-> Execution Time 27030ms
+>JSON.stringify objects: 10506 bytes: 1048629
+>Execution Time 105ms
 >
-> Finidng Limit uisng GZIP
-> With GZIP objects: 39505 bytes: 1040992
-> Execution Time 3581ms
+>Finidng Limit uisng GZIP
+>With GZIP objects: 37698 bytes: 1048592
+>Execution Time 5377ms
 >
-> Comparing Max Size
-> JSON Encode:7ms  Decode:20ms
-> 1048495
-> JSON GZIP Encode:40ms  Decode:52ms
-> 292524
-> Percentage of size: 0.2789941773685139
+>Finidng Limit uisng BROTLI
+>With BROTLI objects: 50127 bytes: 1048593
+>Execution Time 162435ms
+>
+>Finidng Limit uisng ZSTD
+>With ZSTD objects: 40195 bytes: 1048579
+>Execution Time 891ms
+>
+>Comparing Max Size
+>JSON Encode:5ms  Decode:9ms
+>1048743
+>JSON GZIP Encode:41ms  Decode:13ms
+>292689
+>Percentage of size: 0.2790855338247788
+>JSON BROTLI Encode:1815ms  Decode:20ms
+>220535
+>Percentage of size: 0.2102850746083645
+>JSON ZSTD Encode:10ms  Decode:10ms
+>273897
+>Percentage of size: 0.26116693985085004

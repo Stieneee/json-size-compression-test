@@ -1,7 +1,7 @@
 const logUpdate = require('log-update');
 const zlib = require('zlib');
-const brotli = require('brotli');
-const ab2str = require('arraybuffer-to-string')
+const brotli = require('iltorb');
+const zstd = require('node-zstd');
 
 // SETUP
 
@@ -75,25 +75,47 @@ console.log(`Execution Time ${end}ms\n`);
 
 // // JSON BROTLI ////////////////////////////////////////////
 
-// console.log('Finidng Limit uisng BROTLI\n');
-// objectArray = [];
-// jsonData = JSON.stringify({});
-// start = new Date();
-// searchStep = 10000;
+console.log('Finidng Limit uisng BROTLI\n');
+objectArray = [];
+jsonData = JSON.stringify({});
+start = new Date();
+searchStep = 10000;
 
-// while (searchStep >= 1){
-//   while (true) {    
-//     for (let index = 0; index < searchStep; index++) objectArray.push(object());  
-//     jsonData = brotli.compress(JSON.stringify(objectArray, 0));
-//     logUpdate('With BROTLI objects:', objectArray.length, 'bytes:', jsonData.length);
-//     if (bytesLimit < jsonData.length) break;
-//   }
-//   for (let index = 0; index < searchStep; index++) objectArray.pop();  
-//   searchStep = searchStep / 10.0;
-// }
+while (searchStep >= 1){
+  while (true) {    
+    for (let index = 0; index < searchStep; index++) objectArray.push(object());  
+    jsonData = brotli.compressSync(Buffer.from(JSON.stringify(objectArray, 0)));
+    logUpdate('With BROTLI objects:', objectArray.length, 'bytes:', jsonData.length);
+    if (bytesLimit < jsonData.length) break;
+  }
+  for (let index = 0; index < searchStep; index++) objectArray.pop();  
+  searchStep = searchStep / 10.0;
+}
 
-// end = new Date() - start
-// console.log(`Execution Time ${end}ms\n`);
+end = new Date() - start
+console.log(`Execution Time ${end}ms\n`);
+
+// // JSON ZSTD ////////////////////////////////////////////
+
+console.log('Finidng Limit uisng ZSTD\n');
+objectArray = [];
+jsonData = JSON.stringify({});
+start = new Date();
+searchStep = 10000;
+
+while (searchStep >= 1){
+  while (true) {    
+    for (let index = 0; index < searchStep; index++) objectArray.push(object());  
+    jsonData = zstd.compressSync(Buffer.from(JSON.stringify(objectArray, 0)));
+    logUpdate('With ZSTD objects:', objectArray.length, 'bytes:', jsonData.length);
+    if (bytesLimit < jsonData.length) break;
+  }
+  for (let index = 0; index < searchStep; index++) objectArray.pop();  
+  searchStep = searchStep / 10.0;
+}
+
+end = new Date() - start
+console.log(`Execution Time ${end}ms\n`);
 
 // Speed Test Compare///////////////////////////////
 
@@ -120,7 +142,7 @@ let uncompressedSize = jsonData.length;
 // JSON GZIP Speed
 start = new Date()
 jsonData = zlib.gzipSync(JSON.stringify(objectArray, 0));
-encode = new Date() - start
+encode = new Date() - start;
 start = new Date()
 tmp = JSON.parse(zlib.gunzipSync(jsonData));
 decode = new Date() - start
@@ -130,12 +152,22 @@ console.log('Percentage of size:', jsonData.length/uncompressedSize);
 
 // JSON BROTLI Speed
 start = new Date()
-jsonData = brotli.compress(JSON.stringify(objectArray, 0));
-encode = new Date() - start
+jsonData = brotli.compressSync(Buffer.from(JSON.stringify(objectArray, 0)));
+encode = new Date() - start;
+start = new Date();
+tmp = JSON.parse(brotli.decompressSync(jsonData));
+decode = new Date() - start;
+console.log(`JSON BROTLI Encode:${encode}ms  Decode:${decode}ms`);
+console.log(jsonData.length);
+console.log('Percentage of size:', jsonData.length/uncompressedSize);
+
+// JSON ZSTD Speed
 start = new Date()
-console.log(ab2str(brotli.decompress(jsonData)));
-tmp = JSON.parse(brotli.decompress(jsonData));
-decode = new Date() - start
-console.log(`JSON GZIP Encode:${encode}ms  Decode:${decode}ms`);
+jsonData = zstd.compressSync(Buffer.from(JSON.stringify(objectArray, 0)));
+encode = new Date() - start;
+start = new Date();
+tmp = JSON.parse(zstd.decompressSync(jsonData));
+decode = new Date() - start;
+console.log(`JSON ZSTD Encode:${encode}ms  Decode:${decode}ms`);
 console.log(jsonData.length);
 console.log('Percentage of size:', jsonData.length/uncompressedSize);
