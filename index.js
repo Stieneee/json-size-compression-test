@@ -20,22 +20,27 @@ const object = function () {
 
 const bytesLimit = 1048576
 
-
-
 // JSON STRINGIFY ///////////////////////////////////
 
 console.log('Finidng Limit of JSON.stringify to fit in ', bytesLimit, ' bytes' )
 
 let objectArray = [];
-let jsonString = JSON.stringify({});
+let jsonData = JSON.stringify({});
 let start = new Date()
+let searchStep = 10000;
 
-while (bytesLimit > jsonString.length) {
-  logUpdate('JSON.stringify objects:', objectArray.length, 'bytes:', jsonString.length);
-  
-  objectArray.push(object());  
-  jsonString = JSON.stringify(objectArray, 0);
+
+while (searchStep >= 1){
+  while (true) {    
+    for (let index = 0; index < searchStep; index++) objectArray.push(object());  
+    jsonData = JSON.stringify(objectArray, 0);
+    logUpdate('JSON.stringify objects:', objectArray.length, 'bytes:', jsonData.length);
+    if (bytesLimit < jsonData.length) break;
+  }
+  for (let index = 0; index < searchStep; index++) objectArray.pop();  
+  searchStep = searchStep / 10.0;
 }
+
 
 let maxJSON = objectArray.length - 1
 
@@ -47,17 +52,20 @@ console.log('');
 // JSON GZIP BTOA ////////////////////////////////////////////
 
 console.log('Finidng Limit uisng GZIP\n');
-// objectArray = [];
-jsonString = JSON.stringify({});
-start = new Date()
+objectArray = [];
+jsonData = JSON.stringify({});
+start = new Date();
+searchStep = 10000;
 
-while (bytesLimit > jsonString.length) {
-  logUpdate('With GZIP objects:', objectArray.length, 'bytes:', jsonString.length);
-
-  for (let index = 0; index < 1000; index++) {
-    objectArray.push(object());  
+while (searchStep >= 1){
+  while (true) {    
+    for (let index = 0; index < searchStep; index++) objectArray.push(object());  
+    jsonData = zlib.gzipSync(JSON.stringify(objectArray, 0));
+    logUpdate('With GZIP objects:', objectArray.length, 'bytes:', jsonData.length);
+    if (bytesLimit < jsonData.length) break;
   }
-  jsonString = (zlib.gzipSync(JSON.stringify(objectArray, 0))).toString('utf8');
+  for (let index = 0; index < searchStep; index++) objectArray.pop();  
+  searchStep = searchStep / 10.0;
 }
 
 end = new Date() - start
@@ -67,7 +75,7 @@ console.log(`Execution Time ${end}ms\n`);
 
 console.log('Comparing Max Size');
 objectArray = [];
-jsonString = JSON.stringify({});
+jsonData = JSON.stringify({});
 
 for (let index = 0; index < maxJSON; index++) {
   objectArray.push(object());  
@@ -75,23 +83,23 @@ for (let index = 0; index < maxJSON; index++) {
 
 // JSON Speed 
 start = new Date()
-jsonString = JSON.stringify(objectArray, 0);
+jsonData = JSON.stringify(objectArray, 0);
 let encode = new Date() - start
-let tmp = JSON.parse(jsonString)
+let tmp = JSON.parse(jsonData)
 let decode = new Date() - start
 console.log(`JSON Encode:${encode}ms  Decode:${decode}ms`);
-console.log(jsonString.length);
+console.log(jsonData.length);
 
-let uncompressedSize = jsonString.length;
+let uncompressedSize = jsonData.length;
 
 // JSON GZIP Speed
 start = new Date()
-jsonString = zlib.gzipSync(JSON.stringify(objectArray, 0));
+jsonData = zlib.gzipSync(JSON.stringify(objectArray, 0));
 encode = new Date() - start
-tmp = JSON.parse(zlib.gunzipSync(jsonString));
+tmp = JSON.parse(zlib.gunzipSync(jsonData));
 decode = new Date() - start
 console.log(`JSON GZIP Encode:${encode}ms  Decode:${decode}ms`);
-console.log(jsonString.length);
-console.log('Percentage of size:', jsonString.length/uncompressedSize);
+console.log(jsonData.length);
+console.log('Percentage of size:', jsonData.length/uncompressedSize);
 
-// console.log(jsonString.toString());
+// console.log(jsonData.toString());
