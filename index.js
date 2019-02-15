@@ -133,7 +133,7 @@ start = new Date()
 jsonData = brotli.compress(JSON.stringify(objectArray, 0));
 encode = new Date() - start
 start = new Date()
-console.log(brotli.decompress(jsonData));
+console.log(ab2str(brotli.decompress(jsonData)));
 tmp = JSON.parse(brotli.decompress(jsonData));
 decode = new Date() - start
 console.log(`JSON GZIP Encode:${encode}ms  Decode:${decode}ms`);
