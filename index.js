@@ -1,5 +1,7 @@
 const logUpdate = require('log-update');
 const zlib = require('zlib');
+const brotli = require('brotli');
+const ab2str = require('arraybuffer-to-string')
 
 // SETUP
 
@@ -49,7 +51,7 @@ console.log(`Execution Time ${end}ms`);
 console.log('');
 
 
-// JSON GZIP BTOA ////////////////////////////////////////////
+// JSON GZIP ////////////////////////////////////////////
 
 console.log('Finidng Limit uisng GZIP\n');
 objectArray = [];
@@ -71,6 +73,28 @@ while (searchStep >= 1){
 end = new Date() - start
 console.log(`Execution Time ${end}ms\n`);
 
+// // JSON BROTLI ////////////////////////////////////////////
+
+// console.log('Finidng Limit uisng BROTLI\n');
+// objectArray = [];
+// jsonData = JSON.stringify({});
+// start = new Date();
+// searchStep = 10000;
+
+// while (searchStep >= 1){
+//   while (true) {    
+//     for (let index = 0; index < searchStep; index++) objectArray.push(object());  
+//     jsonData = brotli.compress(JSON.stringify(objectArray, 0));
+//     logUpdate('With BROTLI objects:', objectArray.length, 'bytes:', jsonData.length);
+//     if (bytesLimit < jsonData.length) break;
+//   }
+//   for (let index = 0; index < searchStep; index++) objectArray.pop();  
+//   searchStep = searchStep / 10.0;
+// }
+
+// end = new Date() - start
+// console.log(`Execution Time ${end}ms\n`);
+
 // Speed Test Compare///////////////////////////////
 
 console.log('Comparing Max Size');
@@ -85,6 +109,7 @@ for (let index = 0; index < maxJSON; index++) {
 start = new Date()
 jsonData = JSON.stringify(objectArray, 0);
 let encode = new Date() - start
+start = new Date()
 let tmp = JSON.parse(jsonData)
 let decode = new Date() - start
 console.log(`JSON Encode:${encode}ms  Decode:${decode}ms`);
@@ -96,10 +121,21 @@ let uncompressedSize = jsonData.length;
 start = new Date()
 jsonData = zlib.gzipSync(JSON.stringify(objectArray, 0));
 encode = new Date() - start
+start = new Date()
 tmp = JSON.parse(zlib.gunzipSync(jsonData));
 decode = new Date() - start
 console.log(`JSON GZIP Encode:${encode}ms  Decode:${decode}ms`);
 console.log(jsonData.length);
 console.log('Percentage of size:', jsonData.length/uncompressedSize);
 
-// console.log(jsonData.toString());
+// JSON BROTLI Speed
+start = new Date()
+jsonData = brotli.compress(JSON.stringify(objectArray, 0));
+encode = new Date() - start
+start = new Date()
+console.log(brotli.decompress(jsonData));
+tmp = JSON.parse(brotli.decompress(jsonData));
+decode = new Date() - start
+console.log(`JSON GZIP Encode:${encode}ms  Decode:${decode}ms`);
+console.log(jsonData.length);
+console.log('Percentage of size:', jsonData.length/uncompressedSize);
